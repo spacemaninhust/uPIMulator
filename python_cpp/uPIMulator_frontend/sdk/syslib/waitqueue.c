@@ -4,5 +4,6 @@
  */
 
 #include <dpuruntime.h>
+#include <dpu_characteristics.h>
 
-unsigned char __attribute__((used)) __sys_wq_table[NR_THREADS] = { [0 ...(NR_THREADS - 1)] = __EMPTY_WAIT_QUEUE };
+unsigned char __attribute__((used)) __sys_wq_table[DPU_NR_THREADS] = { [0 ...(DPU_NR_THREADS - 1)] = __EMPTY_WAIT_QUEUE };

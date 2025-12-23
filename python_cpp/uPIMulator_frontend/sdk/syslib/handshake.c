@@ -8,10 +8,11 @@
 #include <dpuconst.h>
 #include <dpuruntime.h>
 #include <atomic_bit.h>
+#include <dpu_characteristics.h>
 
-unsigned char __handshake_array[NR_THREADS] = { [0 ...(NR_THREADS - 1)] = __EMPTY_WAIT_QUEUE };
+unsigned char __handshake_array[DPU_NR_THREADS] = { [0 ...(DPU_NR_THREADS - 1)] = __EMPTY_WAIT_QUEUE };
 
-ATOMIC_BIT_INIT(__handshake)[NR_THREADS];
+ATOMIC_BIT_INIT(__handshake)[DPU_NR_THREADS];
 
 #define __acquire_handshake(off) __ATOMIC_BIT_ACQUIRE(off + (ATOMIC_BIT_GET(__handshake) - &__atomic_start_addr), 0)
 #define __release_handshake(off) __ATOMIC_BIT_RELEASE(off + (ATOMIC_BIT_GET(__handshake) - &__atomic_start_addr), 0)

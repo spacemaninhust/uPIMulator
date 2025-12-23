@@ -28,44 +28,52 @@ void InitThread::launch() {
 
 void InitThread::dma_transfer_to_atomic() {
   auto byte_stream = load_byte_stream("atomic");
-  for (auto &dpu : rank_->dpus()) {
-    dpu->dma()->transfer_to_atomic(util::ConfigLoader::atomic_offset(),
-                                   byte_stream);
+  if (byte_stream) {
+    for (auto &dpu : rank_->dpus()) {
+      dpu->dma()->transfer_to_atomic(util::ConfigLoader::atomic_offset(),
+                                     byte_stream);
+    }
+    delete byte_stream;
   }
-  delete byte_stream;
 
   std::cout << "DMA to atomic completed..." << std::endl;
 }
 
 void InitThread::dma_transfer_to_iram() {
   auto byte_stream = load_byte_stream("iram");
-  for (auto &dpu : rank_->dpus()) {
-    dpu->dma()->transfer_to_iram(util::ConfigLoader::iram_offset(),
-                                 byte_stream);
+  if (byte_stream) {
+    for (auto &dpu : rank_->dpus()) {
+      dpu->dma()->transfer_to_iram(util::ConfigLoader::iram_offset(),
+                                   byte_stream);
+    }
+    delete byte_stream;
   }
-  delete byte_stream;
 
   std::cout << "DMA to IRAM completed..." << std::endl;
 }
 
 void InitThread::dma_transfer_to_wram() {
   auto byte_stream = load_byte_stream("wram");
-  for (auto &dpu : rank_->dpus()) {
-    dpu->dma()->transfer_to_wram(util::ConfigLoader::wram_offset(),
-                                 byte_stream);
+  if (byte_stream) {
+    for (auto &dpu : rank_->dpus()) {
+      dpu->dma()->transfer_to_wram(util::ConfigLoader::wram_offset(),
+                                   byte_stream);
+    }
+    delete byte_stream;
   }
-  delete byte_stream;
 
   std::cout << "DMA to WRAM completed..." << std::endl;
 }
 
 void InitThread::dma_transfer_to_mram() {
   auto byte_stream = load_byte_stream("mram");
-  for (auto &dpu : rank_->dpus()) {
-    dpu->dma()->transfer_to_mram(util::ConfigLoader::mram_offset(),
-                                 byte_stream);
+  if (byte_stream) {
+    for (auto &dpu : rank_->dpus()) {
+      dpu->dma()->transfer_to_mram(util::ConfigLoader::mram_offset(),
+                                   byte_stream);
+    }
+    delete byte_stream;
   }
-  delete byte_stream;
 
   std::cout << "DMA to MRAM completed..." << std::endl;
 }

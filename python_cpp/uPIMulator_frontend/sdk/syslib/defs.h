@@ -25,9 +25,9 @@
 #endif /* __STDC_VERSION__ */
 
 /**
- * @fn me
- * @internal This just returns the value of the special register id.
+ * @brief Returns the current tasklet's sysname.
  * @return The current tasklet's sysname.
+ * @internal This just returns the value of the special register id.
  */
 static inline sysname_t
 me()
@@ -36,7 +36,6 @@ me()
 }
 
 /**
- * @fn halt
  * @brief Halts the DPU.
  * @throws FAULT_HALT always
  */
@@ -48,8 +47,7 @@ halt()
 }
 
 /**
- * @fn check_stack
- * @return the number of unused 32-bits words in the current runtime's stack.
+ * @return the number of unused 32-bits words in the current thread's stack.
  *         If the number is negative, it indicates by how much 32-bits words the stack overflowed.
  *
  * @internal This fetches the position of the next stack in memory from the Stack Pointer Table (cf. tasklet.h)

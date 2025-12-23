@@ -21,13 +21,11 @@
  */
 
 /**
- * @fn fsb_allocator_t
  * @brief A fixed-size block allocator.
  */
 typedef void **fsb_allocator_t;
 
 /**
- * @fn fsb_alloc
  * @brief Allocate and initialize a fixed-size block allocator.
  *
  * @param block_size the size of the blocks allocated (will be realigned on 8 bytes, with a minimum of 8 bytes)
@@ -39,8 +37,7 @@ fsb_allocator_t
 fsb_alloc(unsigned int block_size, unsigned int nb_of_blocks);
 
 /**
- * @fn fsb_get
- * @brief Own a block of the specified fixed-size block allocator, in a runtime-safe way.
+ * @brief Own a block of the specified fixed-size block allocator, in a thread-safe way.
  *
  * @param allocator the allocator from which we take the block
  * @return A pointer to the owned block if one was available, NULL otherwise.
@@ -49,8 +46,7 @@ void *
 fsb_get(fsb_allocator_t allocator);
 
 /**
- * @fn fsb_free
- * @brief Free a block of the specified fixed-size block allocator, in a runtime-safe way.
+ * @brief Free a block of the specified fixed-size block allocator, in a thread-safe way.
  *
  * @param allocator the allocator in which we put the block back in
  * @param ptr the pointer to the block to free

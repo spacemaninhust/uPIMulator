@@ -10,7 +10,7 @@
  * @file mutex.h
  * @brief Mutual exclusions.
  *
- * A mutex ensures mutual exclusion between threads: only one runtime can have the mutex at a time, blocking all the
+ * A mutex ensures mutual exclusion between threads: only one thread can have the mutex at a time, blocking all the
  * other threads trying to take the mutex.
  *
  * @internal All the mutexes are stored in a table in WRAM. In this table, each byte represents a mutex,
@@ -19,7 +19,7 @@
  *           this addition is what a mutex_get will return.
  *           A lock is made by using an lb_a instruction on the address of the mutex given as a parameter.
  *           An unlock is made by using an sb_r instruction on the address of the mutex given as a parameter.
- *           The id of the runtime doing the unlock is what is currently stored at the address of the mutex.
+ *           The id of the thread doing the unlock is what is currently stored at the address of the mutex.
  *           The base address of this table is associated with the pointer defined by __MUTEX_TABLE__.
  */
 
@@ -35,14 +35,12 @@
 typedef uint8_t *mutex_id_t;
 
 /**
- * @def MUTEX_GET
  * @hideinitializer
  * @brief Return the symbol to use when using the mutex associated to the given name.
  */
 #define MUTEX_GET(_name) _name
 
 /**
- * @def MUTEX_INIT
  * @hideinitializer
  * @brief Declare and initialize a mutex associated to the given name.
  */
@@ -51,7 +49,6 @@ typedef uint8_t *mutex_id_t;
     const mutex_id_t MUTEX_GET(_name) = &ATOMIC_BIT_GET(__CONCAT(mutex_, _name))
 
 /**
- * @fn mutex_lock
  * @brief Takes the lock on the given mutex.
  * @param mutex the mutex we want to lock
  */
@@ -62,7 +59,6 @@ mutex_lock(mutex_id_t mutex)
 }
 
 /**
- * @fn mutex_trylock
  * @brief Tries to take the lock on the given mutex. If the lock is already taken, returns immediately.
  * @param mutex the mutex we want to lock
  * @return Whether the mutex has been successfully locked.
@@ -76,7 +72,6 @@ mutex_trylock(mutex_id_t mutex)
 }
 
 /**
- * @fn mutex_unlock
  * @brief Releases the lock on the given mutex.
  * @param mutex the mutex we want to unlock
  */

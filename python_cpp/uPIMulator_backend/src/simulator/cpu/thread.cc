@@ -22,9 +22,7 @@ Thread::Thread(util::ArgumentParser *argument_parser)
 }
 
 encoder::ByteStream *Thread::load_byte_stream(std::string filename) {
-  std::string bin_filepath = bindir_ + "/" + benchmark_ + "." +
-                             std::to_string(num_tasklets_) + "/" + filename +
-                             ".bin";
+  std::string bin_filepath = get_filepath(filename + ".bin");
   if (std::filesystem::exists(bin_filepath)) {
     auto byte_stream = new encoder::ByteStream(bin_filepath);
     return byte_stream;
@@ -34,9 +32,7 @@ encoder::ByteStream *Thread::load_byte_stream(std::string filename) {
 }
 
 void Thread::init_dpu_transfer_pointer() {
-  std::string bin_filepath = bindir_ + "/" + benchmark_ + "." +
-                             std::to_string(num_tasklets_) +
-                             "/dpu_transfer_pointer.bin";
+  std::string bin_filepath = get_filepath("dpu_transfer_pointer.bin");
   std::ifstream ifs(bin_filepath);
 
   ifs >> sys_used_mram_end_pointer_ >> dpu_input_arguments_pointer_ >>
@@ -44,12 +40,25 @@ void Thread::init_dpu_transfer_pointer() {
 }
 
 void Thread::init_num_executions() {
-  std::string bin_filepath = bindir_ + "/" + benchmark_ + "." +
-                             std::to_string(num_tasklets_) +
-                             "/num_executions.bin";
+  std::string bin_filepath = get_filepath("num_executions.bin");
   std::ifstream ifs(bin_filepath);
 
   ifs >> num_executions_;
+}
+
+std::string Thread::get_filepath(std::string filename) {
+  std::string primary_path = bindir_ + "/" + benchmark_ + "." +
+                             std::to_string(num_tasklets_) + "/" + filename;
+  if (std::filesystem::exists(primary_path)) {
+    return primary_path;
+  }
+
+  std::string fallback_path = bindir_ + "/" + filename;
+  if (std::filesystem::exists(fallback_path)) {
+    return fallback_path;
+  }
+
+  return primary_path;
 }
 
 }  // namespace upmem_sim::simulator::cpu

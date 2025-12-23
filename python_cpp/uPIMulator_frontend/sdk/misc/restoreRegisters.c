@@ -4,9 +4,11 @@
  */
 
 /*
- * The "restore registers" program, is used by debugging processes to restore every registers of every runtime.
- * The program should be booted once on runtime 0.
+ * The "restore registers" program, is used by debugging processes to restore every registers of every thread.
+ * The program should be booted once on thread 0.
  */
+
+#include <dpu_characteristics.h>
 
 #include "restore_carry_and_zero_flag.h"
 
@@ -14,21 +16,21 @@ void __attribute__((naked, used, section(".text.__bootstrap"))) __bootstrap()
 {
     /* clang-format off */
     __asm__ volatile(
-        "  jeq id, " __STR(NR_THREADS) " - 1, .+2\n"
+        "  jeq id, " __STR(DPU_NR_THREADS) " - 1, .+2\n"
         "  boot id, 1\n"
-        "  ld d2,  id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  1)\n"
-        "  ld d4,  id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  2)\n"
-        "  ld d6,  id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  3)\n"
-        "  ld d8,  id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  4)\n"
-        "  ld d10, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  5)\n"
-        "  ld d12, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  6)\n"
-        "  ld d14, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  7)\n"
-        "  ld d16, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  8)\n"
-        "  ld d18, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 *  9)\n"
-        "  ld d20, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 * 10)\n"
-        "  ld d22, id8, " __STR(NR_ATOMIC_BITS) " + (" __STR(NR_THREADS) " * 8 * 11)\n"
+        "  ld d2,  id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  1)\n"
+        "  ld d4,  id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  2)\n"
+        "  ld d6,  id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  3)\n"
+        "  ld d8,  id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  4)\n"
+        "  ld d10, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  5)\n"
+        "  ld d12, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  6)\n"
+        "  ld d14, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  7)\n"
+        "  ld d16, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  8)\n"
+        "  ld d18, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 *  9)\n"
+        "  ld d20, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 * 10)\n"
+        "  ld d22, id8, " __STR(DPU_NR_ATOMIC_BITS) " + (" __STR(DPU_NR_THREADS) " * 8 * 11)\n"
         "  jnz id, atomic_done\n"
-        "  move r0, " __STR(NR_ATOMIC_BITS) " - 1\n"
+        "  move r0, " __STR(DPU_NR_ATOMIC_BITS) " - 1\n"
         "atomic_loop:\n"
         "  lbu r1, r0, 0\n"
         "  jz r1, atomic_release\n"

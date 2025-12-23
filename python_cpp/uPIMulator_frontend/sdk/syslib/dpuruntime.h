@@ -16,6 +16,7 @@
 
 #define __INITIAL_HEAP_POINTER __sys_heap_pointer_reset
 #define __HEAP_POINTER __sys_heap_pointer
+#define __HEAP_POINTER_END __sys_heap_pointer_end
 #define __WAIT_QUEUE_TABLE __sys_wq_table
 #define __SP_TABLE__ __sys_thread_stack_table_ptr
 #define __STDOUT_BUFFER_STATE __stdout_buffer_state
@@ -28,6 +29,7 @@ typedef struct {
 
 extern unsigned int __INITIAL_HEAP_POINTER;
 extern volatile unsigned int __HEAP_POINTER;
+extern const unsigned int __HEAP_POINTER_END;
 extern unsigned char __WAIT_QUEUE_TABLE[];
 extern thread_stack_t __SP_TABLE__[];
 

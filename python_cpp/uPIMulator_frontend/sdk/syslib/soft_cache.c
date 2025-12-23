@@ -4,5 +4,6 @@
  */
 
 #include <attributes.h>
+#include <dpu_characteristics.h>
 
-unsigned long __sw_cache_buffer[NR_THREADS] __dma_aligned __used;
+unsigned long __sw_cache_buffer[DPU_NR_THREADS] __dma_aligned __used;

@@ -20,19 +20,28 @@ mem_alloc_nolock(size_t size)
 {
     unsigned int pointer = __HEAP_POINTER;
 
-    if (size != 0) {
-        pointer = (pointer + 7) & ~7;
+    if (size == 0)
+        goto end;
 
-        unsigned int new_heap_pointer, dummy;
+    pointer = (pointer + 7) & ~7;
 
-        __asm__ volatile("\tadd %[nhp], %[ptr], %[sz], nc, . + 2\n"
-                         "\tfault " __STR(__FAULT_ALLOC_HEAP_FULL__) "\n"
-                                                                     "\tlbu %[dumb], %[nhp], -1\n"
-                         : [nhp] "=r"(new_heap_pointer), [dumb] "=r"(dummy)
-                         : [ptr] "r"(pointer), [sz] "r"(size));
+    unsigned int new_heap_pointer;
 
-        __HEAP_POINTER = new_heap_pointer;
-    }
+    /* force an error if overflow or crossing WRAM max size */
+    /* clang-format off */
+    __asm__ volatile("\tadd %[nhp], %[ptr], %[sz], c, 1f\n"
+                     "\tjltu %[nhp], %[max_size], 2f\n"
+                     "\t1:fault " __STR(__FAULT_ALLOC_HEAP_FULL__) "\n"
+                     "\t2:\n"
+                     : [nhp] "=&r"(new_heap_pointer)
+                     : [ptr] "r"(pointer), [sz] "r"(size),
+                       [max_size] "r"((unsigned int)(&__sys_heap_pointer_end))
+                     );
+    /* clang-format on */
+
+    __HEAP_POINTER = new_heap_pointer;
+
+end:
     return (void *)pointer;
 }
 

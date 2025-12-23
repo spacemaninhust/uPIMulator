@@ -7,12 +7,13 @@
 #include <attributes.h>
 #include <stdint.h>
 #include <dpuruntime.h>
+#include <dpu_characteristics.h>
 
 __mram_noinit uint8_t __sys_used_mram_end[0];
 
 uint64_t __sys_null_pointer __attribute__((used, section(".data.__sys_zero"))) = 0ULL;
 
-uint32_t __lower_data("thread_profiling") thread_profiling[NR_THREADS];
+uint32_t __lower_data("thread_profiling") thread_profiling[DPU_NR_THREADS];
 uint32_t perfcounter_end_value;
 
 #define DECLARE_STACK(x)                                                                                                         \
@@ -23,7 +24,7 @@ uint32_t perfcounter_end_value;
 
 __FOR_EACH_THREAD(DECLARE_STACK);
 
-thread_stack_t __keep __dma_aligned __SP_TABLE__[NR_THREADS] = { __FOR_EACH_THREAD(SET_STACK_TABLE_PTR) };
+thread_stack_t __keep __dma_aligned __SP_TABLE__[DPU_NR_THREADS] = { __FOR_EACH_THREAD(SET_STACK_TABLE_PTR) };
 
 __host const volatile uint32_t CLOCKS_PER_SEC;
 

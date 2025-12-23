@@ -1,6 +1,8 @@
 *.S
 *.bin
-
+asm/
+upmem-2024.2.0-Linux-x86_64/
+sdk/
 bin/
 build/
 cmake-build-debug/

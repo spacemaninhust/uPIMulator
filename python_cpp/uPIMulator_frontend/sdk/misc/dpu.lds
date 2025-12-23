@@ -17,10 +17,10 @@
  */
 ENTRY(__bootstrap)
 MEMORY {
-    iram (rx) : ORIGIN = 0x80000000, LENGTH = 32K
+    iram (rx) : ORIGIN = 0x80000000, LENGTH = DPU_IRAM_SIZE
     mram (wa) : ORIGIN = 0x08000000, LENGTH = 64M
-    wram (wa) : ORIGIN = 0x00000000, LENGTH = 64K
-    atomic (r) : ORIGIN = 0xF0000000, LENGTH = 256
+    wram (wa) : ORIGIN = 0x00000000, LENGTH = DPU_WRAM_SIZE
+    atomic (r) : ORIGIN = 0xF0000000, LENGTH = DPU_ATOMIC_SIZE
 }
 SECTIONS
 {
@@ -30,7 +30,7 @@ SECTIONS
   .text : {
     *(.text.__bootstrap)
     *(.text)
-    *(.text.*) 
+    *(.text.*)
   } > iram
 
   /*
@@ -38,10 +38,10 @@ SECTIONS
    */
   .atomic (NOLOAD) : {
     __atomic_start_addr = .;
-    . = . + 200;
+    . += DPU_ATOMIC_DISPLACEMENT;
     __atomic_used_addr = .;
-    *(.atomic)
-    __atomic_end_addr = .;
+    KEEP(*(.atomic))
+    __atomic_end_addr = (ORIGIN(atomic) + LENGTH(atomic));
   } > atomic
 
   /*
@@ -78,7 +78,7 @@ SECTIONS
   } > wram
 
   .data.stacks (NOLOAD) : {
-    ASSERT(NR_TASKLETS >= 0 && NR_TASKLETS <= 24, "NR_TASKLETS should be in the range: [0; 24]")
+    ASSERT(NR_TASKLETS >= 0 && NR_TASKLETS <= DPU_NR_THREADS, "NR_TASKLETS should be in the range: [0; x] with x == 24 for v1A or 16 for v1B")
     ASSERT(((STACK_SIZE_TASKLET_0  % 8 == 0) && (STACK_SIZE_TASKLET_0  > 0)) || (NR_TASKLETS <= 0 ), "STACK_SIZE_TASKLET_0  should be a multiple of 8 and > 0")
     ASSERT(((STACK_SIZE_TASKLET_1  % 8 == 0) && (STACK_SIZE_TASKLET_1  > 0)) || (NR_TASKLETS <= 1 ), "STACK_SIZE_TASKLET_1  should be a multiple of 8 and > 0")
     ASSERT(((STACK_SIZE_TASKLET_2  % 8 == 0) && (STACK_SIZE_TASKLET_2  > 0)) || (NR_TASKLETS <= 2 ), "STACK_SIZE_TASKLET_2  should be a multiple of 8 and > 0")
@@ -194,6 +194,7 @@ SECTIONS
      */
     . = ALIGN(8);
     PROVIDE(__sys_heap_pointer_reset = .);
+    PROVIDE(__sys_heap_pointer_end = (ORIGIN(wram) + LENGTH(wram)));
   } > wram
 
   .mram.noinit (NOLOAD) : {

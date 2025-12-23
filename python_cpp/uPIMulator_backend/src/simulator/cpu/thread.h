@@ -27,6 +27,8 @@ class Thread {
   void init_dpu_transfer_pointer();
   void init_num_executions();
 
+  std::string get_filepath(std::string filename);
+
  private:
   std::string bindir_;
   std::string benchmark_;

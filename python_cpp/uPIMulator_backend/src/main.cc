@@ -14,14 +14,14 @@ util::ArgumentParser *init_argument_parser() {
   // level 2: level + prints UPMEM register file values per each logic cycle
   argument_parser->add_option("verbose", util::ArgumentParser::INT, "0");
 
-  argument_parser->add_option("benchmark", util::ArgumentParser::STRING, "TRNS");
+  argument_parser->add_option("benchmark", util::ArgumentParser::STRING, "VA");
   argument_parser->add_option("num_dpus", util::ArgumentParser::INT, "1");
   argument_parser->add_option("num_tasklets", util::ArgumentParser::INT, "16");
 
   argument_parser->add_option("bindir", util::ArgumentParser::STRING,
-                              "/home/via/uPIMulator_frontend/bin");
+                              "/home/zhaoyuhang/work_space/uPIMulator/python_cpp/uPIMulator_frontend/python_cpp_VA_bin");
   argument_parser->add_option("logdir", util::ArgumentParser::STRING,
-                              "/home/via/uPIMulator_backend/log");
+                              "./");
 
   argument_parser->add_option("logic_frequency", util::ArgumentParser::INT,
                               "350");

@@ -3,4 +3,6 @@
  * found in the LICENSE file.
  */
 
-int __errno[NR_THREADS];
+#include <dpu_characteristics.h>
+
+int __errno[DPU_NR_THREADS];

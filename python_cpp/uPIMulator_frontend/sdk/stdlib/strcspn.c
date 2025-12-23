@@ -7,7 +7,7 @@
 
 // TODO Possible optimization:
 //  use of the table of indexation that indicates if the character should or should not be accepted/rejected
-//  in this case we will need 128 bits (as there are 128 ascii characters) ( = 16 bytes = 4 words ) per runtime
+//  in this case we will need 128 bits (as there are 128 ascii characters) ( = 16 bytes = 4 words ) per thread
 // => 4x24 = 96 words of 32 bits.
 //
 //  TODO Another solution would be to stock this table only temporarily with the allocation function, but, currently, it's not an

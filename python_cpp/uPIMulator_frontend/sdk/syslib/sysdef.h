@@ -13,7 +13,7 @@
 
 /**
  * @typedef thread_id_t
- * @brief A unique runtime number.
+ * @brief A unique thread number.
  */
 typedef unsigned int thread_id_t;
 

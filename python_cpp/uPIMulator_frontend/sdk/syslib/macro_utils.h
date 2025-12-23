@@ -11,6 +11,8 @@
  * @brief Provide utility macros.
  */
 
+#include <dpu_characteristics.h>
+
 #define __STR(x) __STR_AGAIN(x)
 #define __STR_AGAIN(x) #x
 
@@ -42,6 +44,6 @@
 #define __REPEAT_22(x) x(21) __REPEAT_21(x)
 #define __REPEAT_23(x) x(22) __REPEAT_22(x)
 #define __REPEAT_24(x) x(23) __REPEAT_23(x)
-#define __FOR_EACH_THREAD(x) __CONCAT(__REPEAT_, NR_THREADS)(x)
+#define __FOR_EACH_THREAD(x) __CONCAT(__REPEAT_, DPU_NR_THREADS)(x)
 
 #endif /* DPUSYSCORE_MACRO_UTILS_H */
