@@ -183,6 +183,7 @@ class LinkerScript:
             math.ceil(cur_address / ConfigLoader.min_access_granularity()) * ConfigLoader.min_access_granularity()
         )
         self.symbol("__sys_heap_pointer_reset").set_address(cur_address)
+        self.symbol("__sys_heap_pointer_end").set_address(ConfigLoader.wram_offset() + ConfigLoader.wram_size())
 
         assert cur_address < (ConfigLoader.wram_offset() + ConfigLoader.wram_size())
 
@@ -324,6 +325,7 @@ class LinkerScript:
             *self._init_stack_symbols(),
             Label("__sw_cache_buffer"),
             Label("__sys_heap_pointer_reset"),
+            Label("__sys_heap_pointer_end"),
         }
 
     def _init_stack_symbols(self) -> Set[Label]:

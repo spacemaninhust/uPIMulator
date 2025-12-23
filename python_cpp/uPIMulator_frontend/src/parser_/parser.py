@@ -45,7 +45,7 @@ class Parser:
 
     @staticmethod
     def _preprocess_section(lines: str) -> str:
-        for section_name in Parser._section_names():
+        for section_name in sorted(list(Parser._section_names()), key=lambda x: (len(x), x), reverse=True):
             lines = lines.replace(f".{section_name}", f"%{section_name}")
             lines = lines.replace(f"%{section_name}.", f"%{section_name}, ")
         return lines

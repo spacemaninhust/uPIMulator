@@ -1,5 +1,6 @@
 import os
 from typing import List, Set, Union
+from concurrent.futures import ThreadPoolExecutor
 
 from abi.binary.executable import Executable
 from abi.label.symbol import Symbol
@@ -7,6 +8,7 @@ from abi.section.section import Section
 from abi.section.section_name import SectionName
 from assembler.data_prep.bin import Bin
 from assembler.data_prep.bs_data_prep import BSDataPrep
+from assembler.data_prep.gemm_data_prep import GEMMDataPrep
 from assembler.data_prep.gemv_data_prep import GEMVDataPrep
 from assembler.data_prep.hst_data_prep import HSTDataPrep
 from assembler.data_prep.mlp_data_prep import MLPDataPrep
@@ -26,6 +28,7 @@ from util.path_collector import PathCollector
 class Assembler:
     DataPrep = Union[
         BSDataPrep,
+        GEMMDataPrep,
         GEMVDataPrep,
         HSTDataPrep,
         MLPDataPrep,
@@ -217,70 +220,84 @@ class Assembler:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
-        for execution in range(data_prep.num_executions()):
-            for dpu_id in range(data_prep.num_dpus()):
-                input_dpu_mram_heap_pointer_name = data_prep.input_dpu_mram_heap_pointer_name(execution, dpu_id)
-                if input_dpu_mram_heap_pointer_name is not None:
-                    input_dpu_mram_heap_pointer_name_filepath = os.path.join(
-                        PathCollector.bin_path_in_local(),
-                        f"{data_prep.num_dpus()}_dpus",
-                        f"{benchmark}.{num_tasklets}",
-                        f"input_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
-                    )
-                    input_dpu_mram_heap_pointer_name.dump(input_dpu_mram_heap_pointer_name_filepath)
+        def process_dpu(execution, dpu_id):
+            input_dpu_mram_heap_pointer_name = data_prep.input_dpu_mram_heap_pointer_name(execution, dpu_id)
+            if input_dpu_mram_heap_pointer_name is not None:
+                input_dpu_mram_heap_pointer_name_filepath = os.path.join(
+                    PathCollector.bin_path_in_local(),
+                    f"{data_prep.num_dpus()}_dpus",
+                    f"{benchmark}.{num_tasklets}",
+                    f"input_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
+                )
+                input_dpu_mram_heap_pointer_name.dump(input_dpu_mram_heap_pointer_name_filepath)
+
+        with ThreadPoolExecutor() as executor:
+            for execution in range(data_prep.num_executions()):
+                for dpu_id in range(data_prep.num_dpus()):
+                    executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
     def _assemble_output_dpu_mram_heap_pointer_name(executable: Executable, data_prep: DataPrep) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
-        for execution in range(data_prep.num_executions()):
-            for dpu_id in range(data_prep.num_dpus()):
-                output_dpu_mram_heap_pointer_name = data_prep.output_dpu_mram_heap_pointer_name(execution, dpu_id)
-                if output_dpu_mram_heap_pointer_name is not None:
-                    output_dpu_mram_heap_pointer_name_filepath = os.path.join(
-                        PathCollector.bin_path_in_local(),
-                        f"{data_prep.num_dpus()}_dpus",
-                        f"{benchmark}.{num_tasklets}",
-                        f"output_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
-                    )
-                    output_dpu_mram_heap_pointer_name.dump(output_dpu_mram_heap_pointer_name_filepath)
+        def process_dpu(execution, dpu_id):
+            output_dpu_mram_heap_pointer_name = data_prep.output_dpu_mram_heap_pointer_name(execution, dpu_id)
+            if output_dpu_mram_heap_pointer_name is not None:
+                output_dpu_mram_heap_pointer_name_filepath = os.path.join(
+                    PathCollector.bin_path_in_local(),
+                    f"{data_prep.num_dpus()}_dpus",
+                    f"{benchmark}.{num_tasklets}",
+                    f"output_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
+                )
+                output_dpu_mram_heap_pointer_name.dump(output_dpu_mram_heap_pointer_name_filepath)
+
+        with ThreadPoolExecutor() as executor:
+            for execution in range(data_prep.num_executions()):
+                for dpu_id in range(data_prep.num_dpus()):
+                    executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
     def _assemble_dpu_input_arguments(executable: Executable, data_prep: DataPrep) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
-        for execution in range(data_prep.num_executions()):
-            for dpu_id in range(data_prep.num_dpus()):
-                dpu_input_arguments = data_prep.dpu_input_arguments(execution, dpu_id)
-                if dpu_input_arguments is not None:
-                    dpu_input_arguments_filepath = os.path.join(
-                        PathCollector.bin_path_in_local(),
-                        f"{data_prep.num_dpus()}_dpus",
-                        f"{benchmark}.{num_tasklets}",
-                        f"dpu_input_arguments.dpu_id{dpu_id}.{execution}.bin",
-                    )
+        def process_dpu(execution, dpu_id):
+            dpu_input_arguments = data_prep.dpu_input_arguments(execution, dpu_id)
+            if dpu_input_arguments is not None:
+                dpu_input_arguments_filepath = os.path.join(
+                    PathCollector.bin_path_in_local(),
+                    f"{data_prep.num_dpus()}_dpus",
+                    f"{benchmark}.{num_tasklets}",
+                    f"dpu_input_arguments.dpu_id{dpu_id}.{execution}.bin",
+                )
+                dpu_input_arguments.dump(dpu_input_arguments_filepath)
 
-                    dpu_input_arguments.dump(dpu_input_arguments_filepath)
+        with ThreadPoolExecutor() as executor:
+            for execution in range(data_prep.num_executions()):
+                for dpu_id in range(data_prep.num_dpus()):
+                    executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
     def _assemble_dpu_results(executable: Executable, data_prep: DataPrep) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
-        for execution in range(data_prep.num_executions()):
-            for dpu_id in range(data_prep.num_dpus()):
-                dpu_results = data_prep.dpu_results(execution, dpu_id)
-                if dpu_results is not None:
-                    dpu_results_filepath = os.path.join(
-                        PathCollector.bin_path_in_local(),
-                        f"{data_prep.num_dpus()}_dpus",
-                        f"{benchmark}.{num_tasklets}",
-                        f"dpu_results.dpu_id{dpu_id}.{execution}.bin",
-                    )
+        def process_dpu(execution, dpu_id):
+            dpu_results = data_prep.dpu_results(execution, dpu_id)
+            if dpu_results is not None:
+                dpu_results_filepath = os.path.join(
+                    PathCollector.bin_path_in_local(),
+                    f"{data_prep.num_dpus()}_dpus",
+                    f"{benchmark}.{num_tasklets}",
+                    f"dpu_results.dpu_id{dpu_id}.{execution}.bin",
+                )
+                dpu_results.dump(dpu_results_filepath)
 
-                    dpu_results.dump(dpu_results_filepath)
+        with ThreadPoolExecutor() as executor:
+            for execution in range(data_prep.num_executions()):
+                for dpu_id in range(data_prep.num_dpus()):
+                    executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
     def _assemble_labels(executable: Executable, num_dpus: int) -> None:
@@ -316,6 +333,8 @@ class Assembler:
     def data_prep(benchmark: str, num_tasklets: int, data_prep_param: List[int], num_dpus: int) -> DataPrep:
         if benchmark == "BS":
             return BSDataPrep(num_tasklets, data_prep_param, num_dpus)
+        elif benchmark == "GEMM":
+            return GEMMDataPrep(num_tasklets, data_prep_param, num_dpus)
         elif benchmark == "GEMV":
             return GEMVDataPrep(num_tasklets, data_prep_param, num_dpus)
         elif benchmark == "HST-L" or benchmark == "HST-S":

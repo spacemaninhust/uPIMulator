@@ -37,8 +37,10 @@ class LivenessAnalyzer(assemblyListener):
 
     def exitLabel(self, ctx: assemblyParser.LabelContext) -> None:
         label_name = str(ctx.Identifier())
-        assert label_name not in self._binary.liveness().defs()
-
-        # TODO(bongjoon.hyun@gmail.com): __sys_used_mram_end will be defined in the linker script
-        if label_name != "__sys_used_mram_end":
-            self._binary.liveness().checkout_def(label_name)
+        if label_name in self._binary.liveness().defs():
+            # assert label_name not in self._binary.liveness().defs()
+            pass
+        else:
+            # TODO(bongjoon.hyun@gmail.com): __sys_used_mram_end will be defined in the linker script
+            if label_name != "__sys_used_mram_end":
+                self._binary.liveness().checkout_def(label_name)

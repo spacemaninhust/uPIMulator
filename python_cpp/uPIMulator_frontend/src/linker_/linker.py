@@ -55,6 +55,9 @@ class Linker:
                     if unresolved_symbol in lib.liveness().defs():
                         relocatables.add(lib)
                         has_resolved = True
+            
+            if not has_resolved:
+                print(f"Unresolved symbols: {unresolved_symbols}")
             assert has_resolved
 
             unresolved_symbols = self._unresolved_symbols(relocatables, linker_script)

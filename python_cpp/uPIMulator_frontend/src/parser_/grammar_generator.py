@@ -1,6 +1,7 @@
+import os
+import subprocess
 from typing import List
 
-from util.docker_client import DockerClient
 from util.path_collector import PathCollector
 
 
@@ -10,17 +11,33 @@ class GrammarGenerator:
 
     @staticmethod
     def generate() -> bool:
-        cd = f"cd {GrammarGenerator._grammar_path_in_docker()}"
+        grammar_path = GrammarGenerator._grammar_path_in_local()
+        cd = f"cd {grammar_path}"
         antlr = f"{GrammarGenerator._antlr()} -Dlanguage=Python3 {GrammarGenerator.grammar()}.g4"
 
-        return DockerClient.run(GrammarGenerator._docker_image(), [cd, antlr])
+        command = f"{cd} && {antlr}"
+        try:
+            subprocess.run(command, shell=True, check=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
     @staticmethod
     def clean() -> bool:
-        commands = [f"cd {GrammarGenerator._grammar_path_in_docker()}"]
+        grammar_path = GrammarGenerator._grammar_path_in_local()
+        commands = []
         for filename in GrammarGenerator.generated_filenames():
-            commands.append(f"rm -f {filename}")
-        return DockerClient.run("compiler", commands)
+            commands.append(f"rm -f {os.path.join(grammar_path, filename)}")
+        
+        command = " && ".join(commands)
+        if not command:
+            return True
+            
+        try:
+            subprocess.run(command, shell=True, check=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
 
     @staticmethod
     def grammar() -> str:
@@ -39,16 +56,12 @@ class GrammarGenerator:
         ]
 
     @staticmethod
-    def _grammar_path_in_docker() -> str:
-        return f"{PathCollector.src_path_in_docker()}/parser_/grammar"
-
-    @staticmethod
-    def _docker_image() -> str:
-        return "parser"
+    def _grammar_path_in_local() -> str:
+        return os.path.join(PathCollector.src_path_in_local(), "parser_", "grammar")
 
     @staticmethod
     def _class_path() -> str:
-        return "/root/antlr-4.9.2-complete.jar:$CLASSPATH"
+        return f"{os.environ.get('ANTLR_JAR', '/usr/local/lib/antlr-4.9.2-complete.jar')}:$CLASSPATH"
 
     @staticmethod
     def _antlr() -> str:

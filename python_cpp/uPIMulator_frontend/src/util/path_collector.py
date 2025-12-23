@@ -73,7 +73,7 @@ class PathCollector:
 
     @staticmethod
     def upmem_sdk_path_in_local() -> str:
-        raise ValueError
+        return os.environ.get("UPMEM_HOME", "/opt/upmem")
 
     @staticmethod
     def upmem_sdk_path_in_docker() -> str:
