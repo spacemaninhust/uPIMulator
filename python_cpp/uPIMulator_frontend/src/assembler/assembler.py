@@ -231,7 +231,7 @@ class Assembler:
                 )
                 input_dpu_mram_heap_pointer_name.dump(input_dpu_mram_heap_pointer_name_filepath)
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             for execution in range(data_prep.num_executions()):
                 for dpu_id in range(data_prep.num_dpus()):
                     executor.submit(process_dpu, execution, dpu_id)
@@ -252,7 +252,7 @@ class Assembler:
                 )
                 output_dpu_mram_heap_pointer_name.dump(output_dpu_mram_heap_pointer_name_filepath)
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             for execution in range(data_prep.num_executions()):
                 for dpu_id in range(data_prep.num_dpus()):
                     executor.submit(process_dpu, execution, dpu_id)
@@ -273,7 +273,7 @@ class Assembler:
                 )
                 dpu_input_arguments.dump(dpu_input_arguments_filepath)
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             for execution in range(data_prep.num_executions()):
                 for dpu_id in range(data_prep.num_dpus()):
                     executor.submit(process_dpu, execution, dpu_id)
@@ -294,7 +294,7 @@ class Assembler:
                 )
                 dpu_results.dump(dpu_results_filepath)
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             for execution in range(data_prep.num_executions()):
                 for dpu_id in range(data_prep.num_dpus()):
                     executor.submit(process_dpu, execution, dpu_id)

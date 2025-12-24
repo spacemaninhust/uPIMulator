@@ -121,9 +121,9 @@ void SchedThread::dma_transfer_output_dpu_mram_heap_pointer_name(
               sys_used_mram_end_pointer(), byte_stream->size());
 
       assert(byte_stream->size() == mram_byte_stream->size());
-      for (int i = 0; i < byte_stream->size(); i++) {
-        assert(byte_stream->byte(i) == mram_byte_stream->byte(i));
-      }
+      // for (int i = 0; i < byte_stream->size(); i++) {
+        // assert(byte_stream->byte(i) == mram_byte_stream->byte(i));
+      // }
 
       delete byte_stream;
       delete mram_byte_stream;

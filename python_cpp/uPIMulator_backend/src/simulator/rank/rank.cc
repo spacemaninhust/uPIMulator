@@ -100,7 +100,6 @@ void Rank::write(RankMessage*rank_message) {
 void Rank::cycle() {
   service_sequence_q();
 
-  #pragma omp parallel for
   for (int i = 0; i < dpus_.size(); i++) {
     dpus_[i]->cycle();
   }
