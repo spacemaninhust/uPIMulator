@@ -12,18 +12,15 @@ from util.config_loader import ConfigLoader
 class GEMMDataPrep:
     def __init__(self, num_tasklets: int, data_prep_param: List[int], num_dpus: int):
         assert 0 < num_tasklets < ConfigLoader.max_num_tasklets()
-        assert len(data_prep_param) == 6
+        assert len(data_prep_param) == 3
 
         self._num_tasklets: int = num_tasklets
         self._num_dpus: int = num_dpus
         self._num_executions: int = 1
 
-        self._padded_m = data_prep_param[0]
-        self._padded_k = data_prep_param[1]
-        self._padded_n = data_prep_param[2]
-        self._tile_m = data_prep_param[3]
-        self._tile_k = data_prep_param[4]
-        self._tile_n = data_prep_param[5]
+        self._tile_m = data_prep_param[0]
+        self._tile_k = data_prep_param[1]
+        self._tile_n = data_prep_param[2]
 
 
         # Vectorized generation

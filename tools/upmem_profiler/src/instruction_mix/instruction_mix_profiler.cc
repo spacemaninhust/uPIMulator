@@ -11,12 +11,23 @@ namespace upmem_profiler::instruciton_mix {
 InstructionMixProfiler::InstructionMixProfiler(util::ArgumentParser *argument_parser) {
   std::string log_file = argument_parser->get_string_parameter("logpath");
   instructions_.resize(argument_parser->get_int_parameter("num_tasklets"));
+  ndpu_ = argument_parser->get_int_parameter("ndpu");
 
   total_inst_cnt_ = 0;
 
   std::ifstream ifs(log_file);
   std::string line;
   while (std::getline(ifs, line)) {
+    if (line.find("logic_frequency:") != std::string::npos) {
+      sscanf(line.c_str(), "logic_frequency: %lf", &logic_frequency_);
+    } else if (line.find("/Rank/rank_cycle:") != std::string::npos && total_cycles_ == 0) {
+      sscanf(line.c_str(), "/Rank/rank_cycle: %lu", &total_cycles_);
+    } else if (line.find("/Rank/read_bytes:") != std::string::npos) {
+      sscanf(line.c_str(), "/Rank/read_bytes: %lu", &read_bytes_);
+    } else if (line.find("/Rank/write_bytes:") != std::string::npos) {
+      sscanf(line.c_str(), "/Rank/write_bytes: %lu", &write_bytes_);
+    } 
+
     if (basic::InstructionParser::is_instruction(line)) {
       ThreadID thread_id = basic::InstructionParser::parse_thread_id(line);
       abi::instruction::OpCode op_code = basic::InstructionParser::parse_op_code(line);
@@ -1120,7 +1131,7 @@ void InstructionMixProfiler::profile() {
 
   //   std::cout << std::endl;
   // }
-
+  std::cout << "\n================== [Performance Analysis] ==================" << std::endl;
   std::cout << "INSTRUCTION_MIX: " << std::endl;
 
   for (auto &type_ : inst_type_) {
@@ -1128,7 +1139,23 @@ void InstructionMixProfiler::profile() {
     for (ThreadID thread_id = 0; thread_id < instruction_mixes.size(); thread_id++) { 
       cnt_inst += instruction_mixes[thread_id][type_];
     }
-    std::cout << type_ << "," << ((double)cnt_inst / (double)total_inst_cnt_) << std::endl;
+    std::cout << type_ << ":     " << ((double)cnt_inst / (double)total_inst_cnt_) << std::endl;
+  }
+
+  if (total_cycles_ > 0) {
+    double compute_latency_ms = total_cycles_ / (logic_frequency_ * 1000.0);
+    double read_latency_ms = (read_bytes_) / read_bw_ / 1e6;
+    double write_latency_ms = (write_bytes_) / write_bw_ / 1e6;
+    double io_latency_ms = read_latency_ms + write_latency_ms;
+    double total_latency_ms = compute_latency_ms + io_latency_ms;
+    std::cout << "------------------------------------------------------------" << std::endl;
+    std::cout << "Logic Frequency: " << logic_frequency_ << " MHz" << std::endl;
+    std::cout << "------------------------------------------------------------" << std::endl;
+    std::cout << "Total Latency:   " << total_latency_ms << " ms" << std::endl;
+    std::cout << "Write Latency:     " << write_latency_ms << " ms" << std::endl;
+    std::cout << "Read Latency:     " << read_latency_ms << " ms" << std::endl;
+    std::cout << "Compute Time:    " << compute_latency_ms << " ms" << std::endl;
+    std::cout << "============================================================" << std::endl;
   }
 }
 

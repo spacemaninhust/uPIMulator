@@ -15,7 +15,15 @@ def compile(benchmark: str, num_tasklets: int) -> None:
 
 def link(benchmark: str, num_dpus: int,num_tasklets: int, data_prep_param: list) -> None:
     linker = Linker(num_tasklets)
-    linker.link(os.path.join(PathCollector.asm_path_in_local(), f"{benchmark}.{num_tasklets}", "main.S"), data_prep_param, num_dpus)
+    if benchmark == "GEMM":
+        tile_m = data_prep_param[0]
+        tile_k = data_prep_param[1]
+        tile_n = data_prep_param[2]
+        linker.link(os.path.join(PathCollector.asm_path_in_local(), 
+                                f"{benchmark}.{tile_m}.{tile_k}.{tile_n}.{num_tasklets}", "main.S"), 
+                                data_prep_param, num_dpus)
+    else:
+        linker.link(os.path.join(PathCollector.asm_path_in_local(), f"{benchmark}.{num_tasklets}", "main.S"), data_prep_param, num_dpus)
 
 
 def iss(benchmark: str, num_tasklets: int) -> None:
@@ -30,10 +38,10 @@ def iss(benchmark: str, num_tasklets: int) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--benchmark", type=str, default="SEL")
-    parser.add_argument("--num_tasklets", type=int, default=1)
+    parser.add_argument("--num_tasklets", type=int, default=16)
     parser.add_argument("--mode", type=str, default="all")
     parser.add_argument("--data_prep_param", type=str, default="2048")
-    parser.add_argument("--num_dpus", type=int, default="16")
+    parser.add_argument("--num_dpus", type=int, default=1)
     args = parser.parse_args()
 
     data_prep_param = [int(elem) for elem in args.data_prep_param.split(',')]

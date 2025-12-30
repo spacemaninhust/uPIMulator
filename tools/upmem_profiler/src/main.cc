@@ -13,6 +13,7 @@ util::ArgumentParser *init_argument_parser() {
   argument_parser->add_option("labelpath", util::ArgumentParser::STRING, "/home/dongjaelee/upmem_profiler/bin/1024/VA.16/labels.bin");
   argument_parser->add_option("logpath", util::ArgumentParser::STRING, "/home/dongjae/data_sweep_hbm_mmu/trace/ptw1_tlbway16_tlbset1/VA/131072/VA.16.trace");
   argument_parser->add_option("num_tasklets", util::ArgumentParser::INT, "16");
+  argument_parser->add_option("ndpu", util::ArgumentParser::INT, "1");
 
   return argument_parser;
 }

@@ -49,28 +49,31 @@ class Assembler:
     def assemble(
         executable: Executable, linker_script: LinkerScript, data_prep_param: List[int], num_dpus: int
     ) -> None:
-        Assembler._assemble_atomic(executable, num_dpus)
-        Assembler._assemble_iram(executable, num_dpus)
-        Assembler._assemble_wram(executable, num_dpus)
-        Assembler._assemble_mram(executable, num_dpus)
-
-        Assembler._assemble_global_object_symbols(executable, num_dpus)
-        Assembler._assemble_labels(executable, num_dpus)
-
-        Assembler._assemble_dpu_transfer_pointer(executable, linker_script, num_dpus)
-
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         data_prep = Assembler.data_prep(benchmark, num_tasklets, data_prep_param, num_dpus)
+        name = f"{benchmark}.{num_tasklets}" if benchmark != "GEMM" \
+            else f"{benchmark}.{data_prep_param[0]}.{data_prep_param[1]}.{data_prep_param[2]}.{num_tasklets}"
+        Assembler._assemble_atomic(executable, num_dpus, name)
+        Assembler._assemble_iram(executable, num_dpus, name)
+        Assembler._assemble_wram(executable, num_dpus, name)
+        Assembler._assemble_mram(executable, num_dpus, name)
 
-        Assembler._assemble_input_dpu_mram_heap_pointer_name(executable, data_prep)
-        Assembler._assemble_output_dpu_mram_heap_pointer_name(executable, data_prep)
-        Assembler._assemble_dpu_input_arguments(executable, data_prep)
-        Assembler._assemble_dpu_results(executable, data_prep)
-        Assembler._assemble_num_executions(executable, data_prep)
+        Assembler._assemble_global_object_symbols(executable, num_dpus, name)
+        Assembler._assemble_labels(executable, num_dpus, name)
+
+        Assembler._assemble_dpu_transfer_pointer(executable, linker_script, num_dpus, name)
+
+        Assembler._assemble_input_dpu_mram_heap_pointer_name(executable, data_prep, name)
+        Assembler._assemble_output_dpu_mram_heap_pointer_name(executable, data_prep, name)
+        Assembler._assemble_dpu_input_arguments(executable, data_prep, name)
+        Assembler._assemble_dpu_results(executable, data_prep, name)
+        Assembler._assemble_num_executions(executable, data_prep, name)
+
+        
 
     @staticmethod
-    def _assemble_atomic(executable: Executable, num_dpus: int) -> None:
+    def _assemble_atomic(executable: Executable, num_dpus: int, name: str) -> None:
         atomic_sections = Assembler._sort(executable.sections(SectionName.ATOMIC))
 
         benchmark = Assembler._benchmark(executable)
@@ -78,7 +81,7 @@ class Assembler:
         atomic_filepath = os.path.join(
             PathCollector.bin_path_in_local(),
             f"{num_dpus}_dpus",
-            f"{benchmark}.{num_tasklets}",
+            name,
             "atomic.bin",
         )
 
@@ -89,13 +92,13 @@ class Assembler:
         atomic_bin.dump(atomic_filepath)
 
     @staticmethod
-    def _assemble_iram(executable: Executable, num_dpus: int) -> None:
+    def _assemble_iram(executable: Executable, num_dpus: int, name: str) -> None:
         text_sections = Assembler._sort(executable.sections(SectionName.TEXT))
 
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         iram_filepath = os.path.join(
-            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", f"{benchmark}.{num_tasklets}", "iram.bin"
+            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", name, "iram.bin"
         )
 
         bytes_: List[Byte] = []
@@ -105,7 +108,7 @@ class Assembler:
         iram_bin.dump(iram_filepath)
 
     @staticmethod
-    def _assemble_wram(executable: Executable, num_dpus: int) -> None:
+    def _assemble_wram(executable: Executable, num_dpus: int, name: str) -> None:
         sections = Assembler._sort(
             {
                 *executable.sections(SectionName.DATA),
@@ -118,7 +121,7 @@ class Assembler:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         wram_filepath = os.path.join(
-            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", f"{benchmark}.{num_tasklets}", "wram.bin"
+            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", name, "wram.bin"
         )
 
         bytes_: List[Byte] = []
@@ -128,7 +131,7 @@ class Assembler:
         wram_bin.dump(wram_filepath)
 
     @staticmethod
-    def _assemble_mram(executable: Executable, num_dpus: int) -> None:
+    def _assemble_mram(executable: Executable, num_dpus: int, name: str) -> None:
         sections = Assembler._sort(
             {
                 *executable.sections(SectionName.DEBUG_ABBREV),
@@ -146,7 +149,7 @@ class Assembler:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         mram_filepath = os.path.join(
-            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", f"{benchmark}.{num_tasklets}", "mram.bin"
+            PathCollector.bin_path_in_local(), f"{num_dpus}_dpus", name, "mram.bin"
         )
 
         bytes_: List[Byte] = []
@@ -156,13 +159,13 @@ class Assembler:
         mram_bin.dump(mram_filepath)
 
     @staticmethod
-    def _assemble_global_object_symbols(executable: Executable, num_dpus: int) -> None:
+    def _assemble_global_object_symbols(executable: Executable, num_dpus: int, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         global_object_symbols_filepath = os.path.join(
             PathCollector.bin_path_in_local(),
             f"{num_dpus}_dpus",
-            f"{benchmark}.{num_tasklets}",
+            name,
             "global_object_symbols.bin",
         )
         with open(global_object_symbols_filepath, "w") as file:
@@ -177,14 +180,14 @@ class Assembler:
             file.writelines(lines)
 
     @staticmethod
-    def _assemble_dpu_transfer_pointer(executable: Executable, linker_script: LinkerScript, num_dpus: int) -> None:
+    def _assemble_dpu_transfer_pointer(executable: Executable, linker_script: LinkerScript, num_dpus: int, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
         dpu_transfer_pointer_filepath = os.path.join(
             PathCollector.bin_path_in_local(),
             f"{num_dpus}_dpus",
-            f"{benchmark}.{num_tasklets}",
+            name,
             "dpu_transfer_pointer.bin",
         )
         with open(dpu_transfer_pointer_filepath, "w") as file:
@@ -216,7 +219,7 @@ class Assembler:
             file.writelines(lines)
 
     @staticmethod
-    def _assemble_input_dpu_mram_heap_pointer_name(executable: Executable, data_prep: DataPrep) -> None:
+    def _assemble_input_dpu_mram_heap_pointer_name(executable: Executable, data_prep: DataPrep, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
@@ -226,7 +229,7 @@ class Assembler:
                 input_dpu_mram_heap_pointer_name_filepath = os.path.join(
                     PathCollector.bin_path_in_local(),
                     f"{data_prep.num_dpus()}_dpus",
-                    f"{benchmark}.{num_tasklets}",
+                    name,
                     f"input_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
                 )
                 input_dpu_mram_heap_pointer_name.dump(input_dpu_mram_heap_pointer_name_filepath)
@@ -237,7 +240,7 @@ class Assembler:
                     executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
-    def _assemble_output_dpu_mram_heap_pointer_name(executable: Executable, data_prep: DataPrep) -> None:
+    def _assemble_output_dpu_mram_heap_pointer_name(executable: Executable, data_prep: DataPrep, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
@@ -247,7 +250,7 @@ class Assembler:
                 output_dpu_mram_heap_pointer_name_filepath = os.path.join(
                     PathCollector.bin_path_in_local(),
                     f"{data_prep.num_dpus()}_dpus",
-                    f"{benchmark}.{num_tasklets}",
+                    name,
                     f"output_dpu_mram_heap_pointer_name.dpu_id{dpu_id}.{execution}.bin",
                 )
                 output_dpu_mram_heap_pointer_name.dump(output_dpu_mram_heap_pointer_name_filepath)
@@ -258,7 +261,7 @@ class Assembler:
                     executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
-    def _assemble_dpu_input_arguments(executable: Executable, data_prep: DataPrep) -> None:
+    def _assemble_dpu_input_arguments(executable: Executable, data_prep: DataPrep, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
@@ -268,7 +271,7 @@ class Assembler:
                 dpu_input_arguments_filepath = os.path.join(
                     PathCollector.bin_path_in_local(),
                     f"{data_prep.num_dpus()}_dpus",
-                    f"{benchmark}.{num_tasklets}",
+                    name,
                     f"dpu_input_arguments.dpu_id{dpu_id}.{execution}.bin",
                 )
                 dpu_input_arguments.dump(dpu_input_arguments_filepath)
@@ -279,7 +282,7 @@ class Assembler:
                     executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
-    def _assemble_dpu_results(executable: Executable, data_prep: DataPrep) -> None:
+    def _assemble_dpu_results(executable: Executable, data_prep: DataPrep, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
 
@@ -289,7 +292,7 @@ class Assembler:
                 dpu_results_filepath = os.path.join(
                     PathCollector.bin_path_in_local(),
                     f"{data_prep.num_dpus()}_dpus",
-                    f"{benchmark}.{num_tasklets}",
+                    name,
                     f"dpu_results.dpu_id{dpu_id}.{execution}.bin",
                 )
                 dpu_results.dump(dpu_results_filepath)
@@ -300,13 +303,13 @@ class Assembler:
                     executor.submit(process_dpu, execution, dpu_id)
 
     @staticmethod
-    def _assemble_labels(executable: Executable, num_dpus: int) -> None:
+    def _assemble_labels(executable: Executable, num_dpus: int, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         labels_filepath = os.path.join(
             PathCollector.bin_path_in_local(),
             f"{num_dpus}_dpus",
-            f"{benchmark}.{num_tasklets}",
+            name,
             "labels.bin",
         )
         with open(labels_filepath, "w") as file:
@@ -316,13 +319,13 @@ class Assembler:
             file.writelines(lines)
 
     @staticmethod
-    def _assemble_num_executions(executable: Executable, data_prep: DataPrep) -> None:
+    def _assemble_num_executions(executable: Executable, data_prep: DataPrep, name: str) -> None:
         benchmark = Assembler._benchmark(executable)
         num_tasklets = Assembler._num_tasklets(executable)
         num_executions_filepath = os.path.join(
             PathCollector.bin_path_in_local(),
             f"{data_prep.num_dpus()}_dpus",
-            f"{benchmark}.{num_tasklets}",
+            name,
             "num_executions.bin",
         )
         with open(num_executions_filepath, "w") as file:

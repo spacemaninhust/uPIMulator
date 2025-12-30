@@ -96,4 +96,4 @@ class Compiler:
 
     @staticmethod
     def _dpu_upmem_dpurte_clang() -> str:
-        return "/home/zhaoyuhang/work_space/uPIMulator/python_cpp/upmem-2024.2.0-Linux-x86_64/bin/dpu-upmem-dpurte-clang"
+        return "dpu-upmem-dpurte-clang"
