@@ -1144,8 +1144,10 @@ void InstructionMixProfiler::profile() {
 
   if (total_cycles_ > 0) {
     double compute_latency_ms = total_cycles_ / (logic_frequency_ * 1000.0);
-    double read_latency_ms = (read_bytes_) / read_bw_ / 1e6;
-    double write_latency_ms = (write_bytes_) / write_bw_ / 1e6;
+    double read_latency_ms =
+      (double(read_bytes_) / 1024.0 / 1024.0 / 1024.0) / read_bw_ * 1000.0;
+    double write_latency_ms =
+      (double(write_bytes_) / 1024.0 / 1024.0 / 1024.0) / write_bw_ * 1000.0;
     double io_latency_ms = read_latency_ms + write_latency_ms;
     double total_latency_ms = compute_latency_ms + io_latency_ms;
     std::cout << "------------------------------------------------------------" << std::endl;

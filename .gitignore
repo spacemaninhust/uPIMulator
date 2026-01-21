@@ -10,7 +10,8 @@ validation_log/
 __pycache__/
 .idea/
 .vscode/
-
+*.log
+*.lock
 # Prerequisites
 *.d
 
